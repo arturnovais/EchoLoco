@@ -1,0 +1,31 @@
+stt:
+  provider: huggingface
+  model_checkpoint: "jonatasgrosman/wav2vec2-large-xlsr-53-portuguese"
+  language: "portuguese"
+  sample_rate: 16000
+  device: "cpu"
+  transcription_kwargs: {}
+
+audio:
+  input_dir: "./audio_inputs"
+  output_dir: "./audio_outputs"
+  accepted_formats: ["wav", "mp3", "ogg"]
+
+assistant:
+  name: "EchoLoco"
+  greeting: "Olá! Como posso ajudar você hoje?"
+  farewell: "Até logo! Se precisar de algo, estarei por aqui."
+
+llm:
+  provider: "gpt" 
+  gpt_model: "gpt-4o-mini"
+  gemini_model: "gemini-2.5-flash-preview-04-17"
+
+
+tts:
+  provider: "huggingface"
+  model_checkpoint: "facebook/mms-tts-por"
+  language: "pt"
+  device: "cpu"
+  voice: null
+  output_dir: "./audios_sintetizados"
