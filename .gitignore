@@ -27,3 +27,6 @@ TestResults.xml
 ### Python ###
 __pycache__/
 *.pyc
+
+#Audios sintetizados
+audios_sintetizados/

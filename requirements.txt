@@ -4,3 +4,5 @@ openai==1.74.0
 google-generativeai==0.3.2
 scipy
 python-dotenv
+kenlm
+pyctcdecode
