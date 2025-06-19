@@ -34,3 +34,8 @@ audios_sintetizados/
 # venv
 .venv/
 .venv311/
+
+# Persistencia do qdrant
+qdrant_data/
+qdrant/
+snapshots/

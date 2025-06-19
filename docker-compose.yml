@@ -6,5 +6,5 @@ services:
     ports:
       - "6334:6333" 
     volumes:
-      - ./qdrant_data_echoloco:/qdrant/storage
+      - ./qdrant_data:/qdrant/storage
     restart: unless-stopped
