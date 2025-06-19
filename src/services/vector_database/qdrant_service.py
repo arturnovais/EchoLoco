@@ -20,7 +20,7 @@ class QdrantService:
     Manages collection lifecycle and vector operations for voice embeddings.
     """
 
-    def __init__(self, config_path: Optional[str] = None, host: str = "localhost", port: int = 6334):
+    def __init__(self, config_path: Optional[str] = None, host: str = "localhost", port: int = 6333):
         """
         Initialize the Qdrant service using application configuration.
 

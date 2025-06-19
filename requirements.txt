@@ -5,3 +5,4 @@ scipy
 python-dotenv
 kenlm
 pyctcdecode
+qdrant-client
