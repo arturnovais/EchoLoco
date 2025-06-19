@@ -1,12 +1,27 @@
 import nemo.collections.asr as nemo_asr
 
-def speaker_recognition(file1, file2):
-    # Carrega modelo pré-treinado
+def load_model():
+    """
+    Carrega o modelo pré-treinado de reconhecimento de locutor
+    """
     model = nemo_asr.models.EncDecSpeakerLabelModel.from_pretrained(
         "nvidia/speakerverification_en_titanet_large"
     )
     print("Modelo carregado:", model)
+    return model
 
+def verify_speakers(model, file1, file2):
+    """
+    Verifica se dois arquivos de áudio são do mesmo locutor
+    
+    Args:
+        model: Modelo pré-treinado de reconhecimento de locutor
+        file1: Caminho para o primeiro arquivo de áudio
+        file2: Caminho para o segundo arquivo de áudio
+        
+    Returns:
+        bool: True se os áudios são do mesmo locutor, False caso contrário
+    """
     # Extrai embeddings
     emb1 = model.get_embedding(file1)
     emb2 = model.get_embedding(file2)
@@ -16,11 +31,4 @@ def speaker_recognition(file1, file2):
     # Verifica se os audios são do mesmo locutor
     result = model.verify_speakers(file1, file2)
     print(f"Mesma pessoa? {result}")
-
-    # Exemplo: comparar vários arquivos em loop
-    arquivos = [file1, file2]
-    embeddings = {f: model.get_embedding(f) for f in arquivos}
-    for a in arquivos:
-        for b in arquivos:
-            score = model.verify_speakers(a, b)
-            print(f"{a} vs {b}: {score}")
+    return result
