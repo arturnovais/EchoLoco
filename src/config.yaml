@@ -1,6 +1,6 @@
 stt:
   provider: huggingface
-  model_checkpoint: "jonatasgrosman/wav2vec2-large-xlsr-53-portuguese"
+  model_checkpoint: "freds0/distil-whisper-large-v3-ptbr"
   language: "portuguese"
   sample_rate: 16000
   device: "cpu"
@@ -25,6 +25,7 @@ llm:
 tts:
   provider: "huggingface"
   model_checkpoint: "facebook/mms-tts-por"
+  audio_format: "wav"
   language: "pt"
   device: "cpu"
   voice: null
