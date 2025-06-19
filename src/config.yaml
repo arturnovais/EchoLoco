@@ -23,12 +23,12 @@ llm:
 
 
 tts:
+  tts_type: "vits"           # opções: vits, mms-tts, pipeline, parler-tts
   provider: "huggingface"
   model_checkpoint: "facebook/mms-tts-por"
   audio_format: "wav"
   language: "pt"
   device: "cpu"
-  voice: null
   output_dir: "./audios_sintetizados"
 
 
