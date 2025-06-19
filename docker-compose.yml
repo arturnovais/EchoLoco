@@ -1,1 +1,10 @@
-#IMPLEMENTAR
+version: "3.8"
+services:
+  qdrant_echoloco:
+    image: qdrant/qdrant:v1.9.0
+    container_name: qdrant_echoloco
+    ports:
+      - "6334:6333" 
+    volumes:
+      - ./qdrant_data_echoloco:/qdrant/storage
+    restart: unless-stopped

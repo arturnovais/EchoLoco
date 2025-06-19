@@ -30,3 +30,13 @@ tts:
   device: "cpu"
   voice: null
   output_dir: "./audios_sintetizados"
+
+
+embedding_model:
+  name: "speechbrain/spkrec-ecapa-voxceleb"
+  vector_size: 192
+  sample_rate: 16000
+
+qdrant:
+  collection: "voice_embeddings"
+  distance: "COSINE"
