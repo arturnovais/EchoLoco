@@ -31,9 +31,9 @@ Certifique-se de que:
 - O `audios_metadata.csv` possui caminhos relativos ao diretório `audios/` na coluna `path` (exemplo: `Artur/7_sr.wav`)
 
 2️⃣ Execute o script para popular:
-"
+```
 python -m src.services.vector_database.populate_database
-"
+```
 O script irá:
 - Carregar o modelo Titanet
 - Criar (ou recriar) a collection no Qdrant
@@ -43,22 +43,22 @@ O script irá:
 ## 🔍 Verificando as collections (opcional)
 
 Você pode verificar as collections no Qdrant acessando a API REST:
-"
+```
 http://localhost:6334/collections
-"
+```
 ou usando o método:
-"
+```
 qdrant_service.list_collections()
-"
+```
 
 ---
 
 ## 📌 Exemplo de execução esperada
 
-"
+```
 Modelo carregado.
 Processando: EchoLoco/audios/Artur/7_sr.wav
 Embedding inserido com ID: f2c9a9e6-...
 Processando: EchoLoco/audios/Artur/8_sr.wav
 Embedding inserido com ID: 1a7f2d4b-...
-"
+```
