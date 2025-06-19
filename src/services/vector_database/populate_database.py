@@ -72,7 +72,7 @@ def process_audios(audio_dir: Path, metadata_path: Path, qdrant_service):
             embedding = extract_embedding(model, str(audio_path))
 
             payload = {
-                "path": str(rel_path),
+                "path": str(raw_path),
                 "ruido": bool(row["ruído?"]),
                 "transcricao": row["transcrição"]
             }

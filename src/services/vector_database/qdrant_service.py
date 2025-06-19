@@ -1,7 +1,7 @@
 import os
 from typing import Optional, List, Dict, Any
 from qdrant_client import QdrantClient
-from qdrant_client.http.models import VectorParams, Distance
+from qdrant_client.http.models import VectorParams, Distance, Filter, FieldCondition, MatchValue
 from src.utils.load_config import load_config
 import uuid
 
@@ -117,6 +117,26 @@ class QdrantService:
             limit=top_k
         )
         return results
+    
+    def query_by_payload(
+        self,
+        key: str,
+        value: Any,
+        limit: int = 20,
+        return_vectors: bool = True
+    ):
+        filtro = Filter(
+            must=[FieldCondition(key=key, match=MatchValue(value=value))]
+        )
+
+        pontos, _ = self.client.scroll(
+            collection_name=self.collection_name,
+            scroll_filter=filtro,
+            with_payload=True,
+            with_vectors=return_vectors, 
+            limit=limit
+        )
+        return pontos
 
     def delete_collection(self) -> None:
         """
