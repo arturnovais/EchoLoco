@@ -40,3 +40,10 @@ venv
 qdrant_data/
 qdrant/
 snapshots/
+
+audios/
+
+# DS_Store
+.DS_Store
+
+dataset.zip
