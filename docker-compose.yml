@@ -11,8 +11,8 @@ services:
 
   streamlit:
     build:
-      context: .                       # <-- raiz do projeto, assim enxerga tudo!
-      dockerfile: src/interface/Dockerfile # <-- aponta pro Dockerfile certo
+      context: .                       
+      dockerfile: interface/Dockerfile 
     container_name: streamlit_interface
     ports:
       - "8501:8501"

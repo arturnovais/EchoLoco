@@ -1,12 +1,12 @@
-FROM python:3.11-slim
+FROM python:3.11-bookworm  
 
 WORKDIR /app
 
-COPY requirements.txt . 
+COPY interface/requirements.txt . 
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY src/interface/. .          
+COPY interface/. .          
 
 EXPOSE 8501
 
