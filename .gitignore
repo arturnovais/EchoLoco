@@ -47,3 +47,6 @@ audios/
 .DS_Store
 
 dataset.zip
+
+# Google Cloud Storage
+service-account.json

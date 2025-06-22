@@ -9,3 +9,4 @@ qdrant-client
 fastapi
 uvicorn
 pydantic
+google-cloud-storage
