@@ -6,3 +6,6 @@ python-dotenv
 kenlm
 pyctcdecode
 qdrant-client
+fastapi
+uvicorn
+pydantic

@@ -1,6 +1,6 @@
 import os
-from src.utils.load_config import load_config
-from src.services.assistant.llm import GPT, GEMINI
+from utils.load_config import load_config
+from services.assistant.llm import GPT, GEMINI
 
 class Assistant:
     def __init__(self, config_path=None, prompt_path=None):

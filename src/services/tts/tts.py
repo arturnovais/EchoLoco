@@ -1,6 +1,6 @@
 import os
 import numpy as np
-from src.utils.load_config import load_config
+from utils.load_config import load_config
 
 import torch
 import soundfile as sf

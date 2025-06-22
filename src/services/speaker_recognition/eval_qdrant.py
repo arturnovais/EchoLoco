@@ -7,7 +7,7 @@ from typing import Dict, List, Tuple
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor
 import numpy as np
-from src.services.vector_database.qdrant_service import QdrantService
+from services.vector_database.qdrant_service import QdrantService
 
 # --------------------------------------------------------------------------- #
 # 1. Coleta dos arquivos .wav                                                 #

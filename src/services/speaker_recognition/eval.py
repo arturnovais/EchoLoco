@@ -3,7 +3,7 @@ import itertools
 import argparse
 from collections import Counter
 import random
-from src.services.speaker_recognition.speaker_recognition import load_model, verify_speakers
+from services.speaker_recognition.speaker_recognition import load_model, verify_speakers
 from typing import Dict, List, Tuple
 from pathlib import Path
 from concurrent.futures import ProcessPoolExecutor

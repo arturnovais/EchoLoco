@@ -1,6 +1,6 @@
 import os
 from transformers import pipeline
-from src.utils.load_config import load_config
+from utils.load_config import load_config
 
 
 def stt_from_audio(audio_path, config_path=None):
