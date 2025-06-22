@@ -1,14 +1,9 @@
 import os
-import uuid
-from io import BytesIO
-import mimetypes
-
 import numpy as np
+from utils.load_config import load_config
+
 import torch
 import soundfile as sf
-
-from utils.load_config import load_config
-from infra.storage import gcs_client 
 
 def load_tts_pipeline(config_path=None):
     config = load_config(config_path) if config_path else load_config()
@@ -45,34 +40,18 @@ def load_tts_pipeline(config_path=None):
 
     else:
         raise NotImplementedError(f"TTS type '{tts_type}' não implementado.")
-    
-def _upload_to_gcs(local_path: str, dest_prefix: str = "tts") -> str:
-    filename = os.path.basename(local_path)
-    dest_path = f"{dest_prefix}/{filename}"
-
-    # Determina Content-Type (ex.: audio/wav)
-    ctype, _ = mimetypes.guess_type(filename)
-    ctype = ctype or "application/octet-stream"
-
-    gs_uri = gcs_client.upload_file(local_path, dest_path, content_type=ctype)
-    os.remove(local_path)
-    return gs_uri
 
 def tts_from_text(
     text,
     tts_tuple,
     language="pt",
-    output_dir="./audios_tmp",   
-    file_name: str | None = None,
+    output_dir="./audios_sintetizados",
+    file_name="tts_output",
     audio_format="wav"
-) -> str:
+):
     os.makedirs(output_dir, exist_ok=True)
-    if file_name is None:
-        file_name = str(uuid.uuid4())        
-
-    tmp_audio_path = os.path.join(output_dir, f"{file_name}.{audio_format}")
-
     tts_type, tts_obj = tts_tuple
+    audio_path = os.path.join(output_dir, f"{file_name}.{audio_format}")
 
     if tts_type == "vits":
         model, tokenizer = tts_obj
@@ -81,14 +60,16 @@ def tts_from_text(
             output = model(**inputs).waveform
         waveform = output.squeeze().cpu().numpy()
         sampling_rate = model.config.sampling_rate
-        sf.write(tmp_audio_path, waveform, sampling_rate)
+        sf.write(audio_path, waveform, sampling_rate)
+        return audio_path
 
     elif tts_type == "pipeline":
         tts_pipe = tts_obj
         result = tts_pipe(text)
         if isinstance(result, dict) and "audio" in result:
-            with open(tmp_audio_path, "wb") as f:
+            with open(audio_path, "wb") as f:
                 f.write(result["audio"])
+            return audio_path
 
     elif tts_type == "parler-tts":
         model, tokenizer = tts_obj
@@ -96,15 +77,10 @@ def tts_from_text(
         model = model.to(device)
         inputs = tokenizer(text, return_tensors="pt").to(device)
         with torch.no_grad():
-            output = model.generate(
-                input_ids=inputs["input_ids"],
-                attention_mask=inputs["attention_mask"]
-            )
+            output = model.generate(input_ids=inputs["input_ids"], attention_mask=inputs["attention_mask"])
             audio_arr = output.cpu().numpy().squeeze()
         sampling_rate = model.config.sampling_rate
-        sf.write(tmp_audio_path, audio_arr, sampling_rate)
+        sf.write(audio_path, audio_arr, sampling_rate)
+        return audio_path
 
-    else:
-        raise RuntimeError("Formato de saída TTS não reconhecido.")
-
-    return _upload_to_gcs(tmp_audio_path, dest_prefix="tts_outputs")
+    raise RuntimeError("Formato de saída TTS não reconhecido.")

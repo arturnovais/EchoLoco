@@ -26,7 +26,8 @@ def _client() -> storage.Client:
     Cria (uma vez) e devolve o storage.Client.
     Usa:
       • GOOGLE_APPLICATION_CREDENTIALS (arquivo)
-      • ou GOOGLE_APPLICATION_CREDENTIALS_JSON (json inline)
+      • ou GOOGLE_APPLICATION_CREDENTIALS_JSON (json inline)  
+      • ou service-account.json na raiz do projeto
       • ou ADC padrão (gcloud auth application-default login)
     """
     if "GOOGLE_APPLICATION_CREDENTIALS_JSON" in os.environ:
@@ -35,7 +36,19 @@ def _client() -> storage.Client:
             scopes=_SCOPES,
         )
         return storage.Client(credentials=creds)
-    return storage.Client()          # ADC  
+    
+    # Tenta carregar service-account.json da raiz do projeto
+    project_root = Path(__file__).parent.parent.parent
+    service_account_path = project_root / "service-account.json"
+    
+    if service_account_path.exists():
+        creds = Credentials.from_service_account_file(
+            str(service_account_path),
+            scopes=_SCOPES,
+        )
+        return storage.Client(credentials=creds)
+    
+    return storage.Client()          # ADC
 
 def _blob(path: str, bucket_name: str | None = None) -> storage.Blob:
     bucket = _client().bucket(bucket_name or BUCKET_NAME)
