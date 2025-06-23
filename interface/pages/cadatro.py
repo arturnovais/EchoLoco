@@ -26,9 +26,6 @@ if "total_duration" not in st.session_state:
 col1, col2 = st.columns(2)
 with col1:
     speaker_name = st.text_input("Nome do locutor", placeholder="Maria da Silva")
-with col2:
-    speaker_id = st.text_input("ID do locutor (opcional)", placeholder="Será gerado automaticamente se vazio")
-
 audio_chunk = st.audio_input("Grave uma amostra (aperte e fale)", key="mic")
 
 if audio_chunk:

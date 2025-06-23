@@ -10,3 +10,4 @@ fastapi
 uvicorn
 pydantic
 google-cloud-storage
+google-cloud-bigquery
