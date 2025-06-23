@@ -1,6 +1,7 @@
+import os, mimetypes
 import streamlit as st
-from time import sleep
-from utils.audio import transcribe_audio, tts_audio
+from utils.audio import transcribe_audio, tts_audio, chat_completion
+from infra.storage.utils import _download_from_gcs
 
 st.set_page_config(page_title="EchoLoco – Chatbot de Voz",
                    page_icon=":microphone:")
@@ -19,19 +20,22 @@ if audio_file:                    # quando o usuário soltar o botão
     with st.spinner("🔎 Transcrevendo…"):
         text = transcribe_audio(audio_file)
 
-    # Mostra bolha do usuário
+    # Mostra mensagem do usuário
     st.chat_message("user").write(text)
     st.session_state.messages.append({"role":"user", "content": text})
 
     # ---------- 2. Chamada ao LLM ----------
     with st.spinner("🤖 Pensando…"):
-        sleep(5)
+        reply = chat_completion(st.session_state.messages)
 
-    st.session_state.messages.append({"role":"assistant", "content": "teste"})
-    st.chat_message("assistant").write("teste")
+    st.session_state.messages.append({"role":"assistant", "content": reply})
+    st.chat_message("assistant").write(reply)
 
-    # ---------- 3. Síntese de voz ----------
+    # ---------- 3. TTS ----------
     with st.spinner("🎙️ Gerando voz…"):
-        speech_bytes = tts_audio("teste")
+        gs_uri = tts_audio(reply)
+        audio_bytes = _download_from_gcs(gs_uri)
+        mime, _ = mimetypes.guess_type(gs_uri)
+        mime = mime or "audio/mpeg"
 
-    st.audio(speech_bytes, format="audio/mpeg")
+    st.audio(audio_bytes, format=mime)

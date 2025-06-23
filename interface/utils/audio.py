@@ -1,4 +1,4 @@
-import tempfile, os, uuid
+import tempfile
 from infra.storage.utils import _upload_to_gcs
 import requests
 
@@ -21,6 +21,18 @@ def transcribe_audio(uploaded_file):
 
     return transcript
 
-def tts_audio(text):
+def chat_completion(history):
+    response = requests.post(
+        "http://0.0.0.0:8000/assistant/reply",
+        #TODO: No momento, o history é uma lista de dicionários que está sendo passado como string.
+        # É necessário passar isso da forma correta.
+        json={"user_text": f"{history}"}
+    )
+    return response.json()["assistant_text"]
 
-    return "teste" 
+def tts_audio(text):
+    response = requests.post(
+        "http://0.0.0.0:8000/tts",
+        json={"text": text}
+    )
+    return response.json()["audio_path"]
