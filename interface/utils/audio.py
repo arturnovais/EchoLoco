@@ -1,6 +1,7 @@
 import tempfile
-from infra.storage.utils import _upload_to_gcs
+from infra.storage.utils import _upload_to_gcs, _download_from_gcs
 import requests
+import mimetypes
 
 def transcribe_audio(uploaded_file):
     # Salva temporariamente
@@ -35,4 +36,11 @@ def tts_audio(text):
         "http://0.0.0.0:8000/tts",
         json={"text": text}
     )
-    return response.json()["audio_path"]
+    audio_path = response.json()["audio_path"]
+    audio_bytes = _download_from_gcs(audio_path)
+    
+    # Determina mime type pelo nome do arquivo
+    mime, _ = mimetypes.guess_type(audio_path)
+    mime = mime or "audio/wav"
+    
+    return audio_bytes, mime

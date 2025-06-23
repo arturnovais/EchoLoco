@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from api.routes import tts, stt, speaker_verification, assistant
+from api.routes import tts, stt, speaker_verification, assistant, speaker_registration
 
 app = FastAPI(
     title="EchoLoco API",
@@ -12,3 +12,4 @@ app.include_router(tts.router, prefix="/tts", tags=["TTS"])
 app.include_router(stt.router, prefix="/stt", tags=["STT"])
 app.include_router(speaker_verification.router, prefix="/speaker", tags=["Speaker Recognition"])
 app.include_router(assistant.router, prefix="/assistant", tags=["Assistant"])
+app.include_router(speaker_registration.router, prefix="/speaker_registration", tags=["Speaker Registration"])

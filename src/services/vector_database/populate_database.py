@@ -6,7 +6,7 @@ import pandas as pd
 import os
 from pathlib import Path
 from src.services.vector_database.qdrant_service import QdrantService
-
+from src.services.speaker_recognition.speaker_recognition import extract_embedding
 
 def load_model():
     """
@@ -17,35 +17,6 @@ def load_model():
     )
     print("Modelo carregado.")
     return model
-
-
-def extract_embedding(model, audio_path):
-    """
-    Extrai o embedding do arquivo de áudio com Titanet.
-
-    Args:
-        model: Modelo Titanet carregado.
-        audio_path: Caminho para o arquivo de áudio.
-
-    Returns:
-        list[float]: O vetor do embedding.
-    """
-    # Carrega e resample
-    audio, _ = librosa.load(audio_path, sr=16000, mono=True)
-
-    # Salva temporariamente como wav
-    with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
-        sf.write(tmp.name, audio, 16000)
-        tmp_path = tmp.name
-
-    # Extrai embedding
-    embedding = model.get_embedding(tmp_path)[0].cpu().numpy().tolist()
-
-    # Remove o arquivo temporário
-    os.unlink(tmp_path)
-
-    return embedding
-
 
 def process_audios(audio_dir: Path, metadata_path: Path, qdrant_service):
     df = pd.read_csv(metadata_path)
