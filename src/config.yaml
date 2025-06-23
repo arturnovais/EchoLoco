@@ -1,10 +1,11 @@
 stt:
-  provider: huggingface
-  model_checkpoint: "freds0/distil-whisper-large-v3-ptbr"
-  language: "portuguese"
-  sample_rate: 16000
-  device: "cpu"
-  transcription_kwargs: {}
+  provider: "openai"   # "huggingface"
+  model_checkpoint: "whisper-1"  # "freds0/distil-whisper-large-v3-ptbr"
+  language: "portuguese"    
+  sample_rate: 16000        
+  device: "cpu"             
+  transcription_kwargs: {}  
+
 
 audio:
   input_dir: "./audio_inputs"

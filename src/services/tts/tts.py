@@ -8,7 +8,7 @@ import torch
 import soundfile as sf
 
 from utils.load_config import load_config
-from infra.storage import gcs_client 
+from infra.storage.utils import _upload_to_gcs
 
 def load_tts_pipeline(config_path=None):
     config = load_config(config_path) if config_path else load_config()
@@ -45,18 +45,6 @@ def load_tts_pipeline(config_path=None):
 
     else:
         raise NotImplementedError(f"TTS type '{tts_type}' não implementado.")
-    
-def _upload_to_gcs(local_path: str, dest_prefix: str = "tts") -> str:
-    filename = os.path.basename(local_path)
-    dest_path = f"{dest_prefix}/{filename}"
-
-    # Determina Content-Type (ex.: audio/wav)
-    ctype, _ = mimetypes.guess_type(filename)
-    ctype = ctype or "application/octet-stream"
-
-    gs_uri = gcs_client.upload_file(local_path, dest_path, content_type=ctype)
-    os.remove(local_path)
-    return gs_uri
 
 def tts_from_text(
     text,
