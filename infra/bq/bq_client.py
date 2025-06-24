@@ -7,21 +7,15 @@ import json
 import os
 from functools import lru_cache
 from pathlib import Path
-from typing import Iterable, Mapping, Sequence, Any
+from typing import Mapping, Sequence, Any
 
 from google.cloud import bigquery
 from google.oauth2 import service_account
 
-# --------------------------------------------------------------------------- #
-# Configurações básicas                                                       #
-# --------------------------------------------------------------------------- #
 PROJECT_ID   = os.getenv("GCP_PROJECT") or os.getenv("GOOGLE_CLOUD_PROJECT")
 DATASET_ID   = os.getenv("BQ_DATASET", "speech_chatbot")
 _SCOPES      = ("https://www.googleapis.com/auth/bigquery",)
 
-# --------------------------------------------------------------------------- #
-# Cliente singleton (lazy)                                                    #
-# --------------------------------------------------------------------------- #
 @lru_cache(maxsize=1)
 def _client() -> bigquery.Client:
     """

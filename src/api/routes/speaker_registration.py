@@ -14,6 +14,7 @@ from services.speaker_recognition.speaker_recognition import (
 )
 
 from infra.storage import gcs_client
+from infra.bq.bq_client import insert_rows
 
 router = APIRouter()
 
@@ -53,6 +54,7 @@ def register_speaker(req: SpeakerRegisterRequest):
     payload = {
         "speaker_name": req.speaker_name,
         "audio_path": req.audio_path,   
+        "speaker_id": req.speaker_id
     }
 
     try:
@@ -67,8 +69,18 @@ def register_speaker(req: SpeakerRegisterRequest):
     finally:
         if is_tmp and os.path.exists(local_path):
             os.unlink(local_path)
+    
+    bq_row = {
+        "speaker_id": req.speaker_id,
+        "speaker_name": req.speaker_name,
+        "instructions": req.instructions,
+    }
+    bq_errors = insert_rows("system_prompts", [bq_row])
+
+    if bq_errors:
+        raise HTTPException(500, f"Erro ao inserir no BigQuery: {bq_errors}")
 
     return SpeakerRegisterResponse(
         speaker_id=speaker_uuid,
-        status="registered",
+        status="registered"
     )
