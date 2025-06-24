@@ -19,7 +19,7 @@ if audio_file:                    # quando o usuário soltar o botão
     with st.spinner("🔎 Identificando usuário…"):
         #TODO: Speaker Verification
         time.sleep(3)
-        st.chat_message("human").write("Usuário: Thiago")
+        st.chat_message("human").write("Usuário identificado: Thiago")
     
     with st.spinner("🔎 Transcrevendo…"):
         text = transcribe_audio(audio_file)

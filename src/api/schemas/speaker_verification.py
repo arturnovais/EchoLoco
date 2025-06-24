@@ -1,4 +1,17 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from typing import Optional
 
-class SpeakerResponse(BaseModel):
-    speaker: str
+class SpeakerVerificationRequest(BaseModel):
+    audio_path: str = Field(
+        ...,
+        description="Caminho do áudio (gs://bucket/obj.wav ou caminho local)"
+    )
+
+class SpeakerVerificationResponse(BaseModel):
+    matched: bool             = Field(..., description="Se o locutor foi reconhecido")
+    speaker_id: Optional[str] = Field(
+        None, description="UUID retornado do Qdrant se matched=True"
+    )
+    score: Optional[float]    = Field(
+        None, description="Score/distância devolvido pelo Qdrant"
+    )

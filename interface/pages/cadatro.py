@@ -5,7 +5,7 @@ import numpy as np
 
 from infra.storage.utils import _upload_to_gcs
 
-API_URL      = "http://0.0.0.0:8000/speaker_registration/"
+API_URL= "http://0.0.0.0:8000/speaker_registration/"
 
 st.set_page_config(page_title="Cadastro de Locutor",
                    page_icon=":bust_in_silhouette:")
@@ -93,7 +93,8 @@ if st.button("📡 Cadastrar locutor"):
     payload = {
         "speaker_name": speaker_name,
         "audio_path": gcs_uri,
-        "speaker_id": speaker_id
+        "speaker_id": speaker_id,
+        "instructions": instructions.strip()
     }
 
     # ---- registra no backend ----
