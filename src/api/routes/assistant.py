@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from api.schemas.assistant import AssistantRequest, AssistantResponse
+from api.schemas.assistant import AssistantRequest, AssistantResponse, AssistantRequestMessages
 from services.assistant.assistant import Assistant
 
 router = APIRouter()
@@ -13,6 +13,14 @@ def get_assistant_reply(request: AssistantRequest):
     Gera uma resposta do assistente com base no texto do usuário.
     """
     reply_text = assistant.reply(request.user_text)
+    return AssistantResponse(assistant_text=reply_text)
+
+@router.post("/reply_api", response_model=AssistantResponse)
+def get_assistant_reply_api(request: AssistantRequestMessages):
+    """
+    Gera uma resposta do assistente com base no texto do usuário.
+    """
+    reply_text = assistant.reply_api(request.messages)
     return AssistantResponse(assistant_text=reply_text)
 
 @router.get("/welcome", response_model=AssistantResponse)

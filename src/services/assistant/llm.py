@@ -29,12 +29,13 @@ class GPT():
             return api_key.strip()
         
         
-    def invoke(self, prompt):
+    def invoke(self, messages):
+        # Se receber um dicionário único, converte para lista
+        if isinstance(messages, dict):
+            messages = [messages]
+        
         response = self.client.chat.completions.create(
-            messages=[{
-                "role": "user",
-                "content": prompt,
-            }],
+            messages=messages,
             model="gpt-4o-mini",
         )
         

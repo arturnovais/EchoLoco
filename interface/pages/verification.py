@@ -55,9 +55,9 @@ if audio_chunk:
             st.error(f"Erro na verificação: {e}")
             st.stop()
 
-    speaker_id   = result.get("speaker_id")
-    speaker_id   = speaker_id.replace("-", "")
-    confidence   = result.get("score")
+    speaker_id = result.get("speaker_id")
+    speaker_id = speaker_id.replace("-", "")
+    confidence = result.get("score")
 
     if not speaker_id:
         st.error("Esse locutor não está cadastrado. Eu não erro!")

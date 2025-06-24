@@ -32,8 +32,15 @@ class Assistant:
 
 
     def reply(self, user_text):
-        full_prompt = f"{self.prompt_base}\nUsuário: {user_text}\nAssistente:"
-        resposta = self.llm.invoke(full_prompt)
+        messages = [
+            {"role": "system", "content": self.prompt_base},
+            {"role": "user", "content": user_text}
+        ]
+        resposta = self.llm.invoke(messages)
+        return resposta
+    
+    def reply_api(self, messages):
+        resposta = self.llm.invoke(messages)
         return resposta
 
     def welcome(self):
