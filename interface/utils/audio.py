@@ -8,6 +8,31 @@ import os
 
 API_URL = "http://0.0.0.0:8000"
 
+# Configuração global do TTS - altere aqui para mudar o provider padrão
+DEFAULT_TTS_PROVIDER = "pretrained"  # "pretrained" ou "elevenlabs"
+DEFAULT_VOICE_ID = "ttLrPNfZdNBtVDeOUJsm"  # ID da voz para ElevenLabs
+DEFAULT_VOICE_SETTINGS = {}  # Configurações padrão para ElevenLabs
+
+def set_default_tts_provider(provider, voice_id=None, voice_settings=None):
+    """
+    Função utilitária para alterar o provider padrão de TTS em tempo de execução.
+    
+    Args:
+        provider (str): "pretrained" ou "elevenlabs"
+        voice_id (str): ID da voz para ElevenLabs (opcional)
+        voice_settings (dict): Configurações de voz para ElevenLabs (opcional)
+    """
+    global DEFAULT_TTS_PROVIDER, DEFAULT_VOICE_ID, DEFAULT_VOICE_SETTINGS
+    
+    if provider not in ["pretrained", "elevenlabs"]:
+        raise ValueError(f"Provider '{provider}' não suportado. Use 'pretrained' ou 'elevenlabs'")
+    
+    DEFAULT_TTS_PROVIDER = provider
+    if voice_id is not None:
+        DEFAULT_VOICE_ID = voice_id
+    if voice_settings is not None:
+        DEFAULT_VOICE_SETTINGS = voice_settings
+
 def upload_audio_to_gcs(uploaded_file, dest_prefix="audio"):
     """
     Faz upload de um arquivo de áudio para o GCS.
@@ -83,14 +108,43 @@ def chat_completion(history):
         
     return assistant_text
 
-def tts_audio(text):
+def tts_audio(text, provider=None, voice_id=None, voice_settings=None):
+    """
+    Gera áudio a partir de texto usando TTS.
+    
+    Args:
+        text (str): Texto para sintetizar
+        provider (str): "pretrained" ou "elevenlabs" (usa DEFAULT_TTS_PROVIDER se None)
+        voice_id (str): ID da voz para ElevenLabs (usa DEFAULT_VOICE_ID se None)
+        voice_settings (dict): Configurações de voz para ElevenLabs (usa DEFAULT_VOICE_SETTINGS se None)
+        
+    Returns:
+        tuple: (audio_bytes, mime_type)
+    """
     if not text or not text.strip():
         raise ValueError("Texto para TTS não pode estar vazio")
+    
+    # Usa valores padrão se não fornecidos
+    provider = provider or DEFAULT_TTS_PROVIDER
+    voice_id = voice_id or DEFAULT_VOICE_ID
+    voice_settings = voice_settings or DEFAULT_VOICE_SETTINGS
+    
+    # Define endpoint e payload baseado no provider
+    if provider == "pretrained":
+        endpoint = f"{API_URL}/tts/pretrained"
+        payload = {"text": text}
+    elif provider == "elevenlabs":
+        endpoint = f"{API_URL}/tts/elevenlabs"
+        payload = {
+            "text": text,
+            "voice_id": voice_id,
+            "model_id": "21m00Tcm4TlvDq8ikWAM",
+            "voice_settings": voice_settings or {}
+        }
+    else:
+        raise ValueError(f"Provider '{provider}' não suportado. Use 'pretrained' ou 'elevenlabs'")
         
-    response = requests.post(
-        f"{API_URL}/tts",
-        json={"text": text}
-    )
+    response = requests.post(endpoint, json=payload)
     response.raise_for_status()
     
     result = response.json()

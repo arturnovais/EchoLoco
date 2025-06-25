@@ -138,9 +138,16 @@ if audio_file is not None:
         with st.spinner("🤖 Pensando…"):
             assistant_reply = chat_completion(history_for_llm)
 
-                # Guarda e mostra a resposta
+        # Guarda e mostra a resposta
+        voice_settings = {
+        "stability": 0.25,
+        "similarity_boost": 0.9,
+        "use_speaker_boost": True,
+        "style": 0.4,
+        "speed": 1
+    }
         with st.spinner("🎙️ Gerando voz…"):
-            audio_bytes, mime = tts_audio(assistant_reply)
+            audio_bytes, mime = tts_audio(assistant_reply, provider="elevenlabs", voice_id="ttLrPNfZdNBtVDeOUJsm", voice_settings=voice_settings)
 
         # Salva no histórico áudio + mime para reexibição em runs futuros
         st.session_state.messages.append(

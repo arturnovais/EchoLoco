@@ -2,13 +2,22 @@ import os
 import uuid
 from io import BytesIO
 import mimetypes
+import os
+import uuid
+from io import BytesIO
+import requests
+from typing import Dict, Any
 
 import numpy as np
 import torch
 import soundfile as sf
-
 from utils.load_config import load_config
 from infra.storage.utils import _upload_to_gcs
+from infra.storage import gcs_client
+
+ELEVEN_ENDPOINT_TMPL = "https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
+DEFAULT_MODEL_ID = "eleven_multilingual_v2"
+DEFAULT_VOICE_ID = "21m00Tcm4TlvDq8ikWAM"
 
 def load_tts_pipeline(config_path=None):
     config = load_config(config_path) if config_path else load_config()
@@ -96,3 +105,50 @@ def tts_from_text(
         raise RuntimeError("Formato de saída TTS não reconhecido.")
 
     return _upload_to_gcs(tmp_audio_path, dest_prefix="tts_outputs")
+
+def tts_eleven(
+    text: str,
+    voice_id: str = DEFAULT_VOICE_ID,
+    model_id: str = DEFAULT_MODEL_ID,
+    voice_settings: Dict[str, Any] | None = None,
+    dest_prefix: str = "tts_outputs",
+) -> str:
+    """
+    Transforma texto em áudio via ElevenLabs e devolve caminho gs://...
+    """
+    api_key = os.getenv("XI_API_KEY")
+    if not api_key:
+        raise RuntimeError("XI_API_KEY não definido.")
+
+    payload = {
+        "text": text,
+        "model_id": model_id,
+        "voice_settings": voice_settings
+        or {
+            "stability": 0.4,
+            "similarity_boost": 0.8,
+        },
+    }
+
+    resp = requests.post(
+        ELEVEN_ENDPOINT_TMPL.format(voice_id=voice_id),
+        headers={
+            "xi-api-key": api_key,
+            "Content-Type": "application/json",
+        },
+        json=payload,
+        timeout=60,
+    )
+    if resp.status_code != 200:
+        raise RuntimeError(
+            f"ElevenLabs API erro {resp.status_code}: {resp.text[:200]}"
+        )
+
+    # --- envia bytes direto para o GCS ------------------------------------ #
+    file_id = f"{uuid.uuid4()}.mp3"
+    dest_path = f"{dest_prefix}/{file_id}"
+
+    gs_uri = gcs_client.upload_file(
+        BytesIO(resp.content), dest_path, content_type="audio/mpeg"
+    )
+    return gs_uri
