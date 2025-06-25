@@ -112,7 +112,8 @@ class QdrantService:
         self,
         embedding: List[float],
         top_k: int = 3,
-        collection_name: Optional[str] = None
+        collection_name: Optional[str] = None,
+        with_vectors: bool = False
     ) -> List[Any]:
         """
         Search for the most similar voice embeddings.
@@ -121,6 +122,7 @@ class QdrantService:
             embedding (List[float]): Query embedding vector.
             top_k (int): Number of top matches to retrieve.
             collection_name (str, optional): Collection name. Uses default if None.
+            with_vectors (bool): Whether to include vectors in the response.
 
         Returns:
             List: List of matching points with scores and payloads.
@@ -129,7 +131,8 @@ class QdrantService:
         results = self.client.search(
             collection_name=collection_name,
             query_vector=embedding,
-            limit=top_k
+            limit=top_k,
+            with_vectors=with_vectors
         )
         return results
     

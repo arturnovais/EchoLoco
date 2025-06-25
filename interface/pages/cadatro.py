@@ -14,9 +14,7 @@ st.title("🎤 Cadastro de novo locutor")
 
 st.markdown(
     """
-    Grave pelo menos **5 segundos** de áudio (pode ser em partes) 
-    e descreva abaixo instruções personalizadas para este locutor
-    (ex.: “voz formal”, “tom descontraído”, etc.).
+    Cadastre um novo locutor para o sistema.
     """
 )
 
@@ -33,7 +31,14 @@ instructions = st.text_area(
     height=100,
 )
 
-audio_chunk = st.audio_input("Grave uma amostra (aperte e fale)", key="mic")
+texto = """
+    LEIA A FRASE A SEGUIR EM VOZ ALTA:
+    "Eu gostaria de declarar o meu ódio ao processamento de áudio e voz. Única coisa que salva essa
+    disciplina são os excelentes docentes que me incentivam cada dia mais a continuar a estudar e me
+    desenvolver enquanto pessoa e profissional."
+    """
+
+audio_chunk = st.audio_input(texto, key="mic")
 
 if audio_chunk:
     with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:

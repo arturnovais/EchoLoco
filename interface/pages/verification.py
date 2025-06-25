@@ -56,18 +56,28 @@ if audio_chunk:
             st.stop()
 
     speaker_id = result.get("speaker_id")
-    speaker_id = speaker_id.replace("-", "")
     confidence = result.get("score")
 
-    if not speaker_id:
+    # Verifica se speaker_id é válido antes de tentar usar replace
+    if not speaker_id or not isinstance(speaker_id, str) or not speaker_id.strip():
         st.error("Esse locutor não está cadastrado. Eu não erro!")
+        st.stop()
+
+    # Remove hífens do speaker_id para consulta no BigQuery, com validação adicional
+    try:
+        speaker_id_clean = speaker_id.replace("-", "")
+        if not speaker_id_clean:
+            st.error("ID do locutor inválido após limpeza.")
+            st.stop()
+    except (AttributeError, TypeError):
+        st.error("Erro ao processar ID do locutor.")
         st.stop()
 
     # ---------- consulta ao BigQuery ----------
 
     sql = f"""SELECT *
     FROM {BQ_TABLE}
-    WHERE speaker_id = '{speaker_id}'
+    WHERE speaker_id = '{speaker_id_clean}'
     LIMIT 1;
     """
 
@@ -79,8 +89,8 @@ if audio_chunk:
         st.stop()
 
     row = row_list[0]
-    speaker_name = row["speaker_name"]
-    instructions = row["instructions"]
+    speaker_name = row.get("speaker_name", "Nome não disponível")
+    instructions = row.get("instructions", "Instruções não disponíveis")
 
     # ---------- exibição ----------
     st.success("✅ Locutor identificado!")
@@ -88,4 +98,4 @@ if audio_chunk:
     st.markdown(f"**Nome:** {speaker_name}")
     st.markdown(f"**Instruções:** {instructions}")
     if confidence is not None:
-        st.markdown(f"**Confiança:** {confidence:.2%}")
+        st.markdown(f"**Confiança:** {confidence}")

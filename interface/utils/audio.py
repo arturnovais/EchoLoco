@@ -53,8 +53,14 @@ def transcribe_audio(uploaded_file, gs_uri=None):
             f"{API_URL}/stt",
             json={"audio_path": gs_uri}
         )
+        response.raise_for_status()
         
-        transcript = response.json()["text"]
+        result = response.json()
+        transcript = result.get("text", "")
+        
+        if not transcript:
+            raise ValueError("Transcrição não retornou texto")
+            
         return transcript
         
     finally:
@@ -67,14 +73,32 @@ def chat_completion(history):
         f"{API_URL}/assistant/reply_api",
         json={"messages": history}
     )
-    return response.json()["assistant_text"]
+    response.raise_for_status()
+    
+    result = response.json()
+    assistant_text = result.get("assistant_text", "")
+    
+    if not assistant_text:
+        raise ValueError("Resposta do assistente está vazia")
+        
+    return assistant_text
 
 def tts_audio(text):
+    if not text or not text.strip():
+        raise ValueError("Texto para TTS não pode estar vazio")
+        
     response = requests.post(
         f"{API_URL}/tts",
         json={"text": text}
     )
-    audio_path = response.json()["audio_path"]
+    response.raise_for_status()
+    
+    result = response.json()
+    audio_path = result.get("audio_path")
+    
+    if not audio_path:
+        raise ValueError("Caminho do áudio não foi retornado pela API")
+        
     audio_bytes = _download_from_gcs(audio_path)
     
     # Determina mime type pelo nome do arquivo
@@ -131,11 +155,18 @@ def verify_speaker(uploaded_file=None, gs_uri=None):
         speaker_id = result.get("speaker_id")
         confidence = result.get("score")
 
-        if not speaker_id:
+        # Verifica se speaker_id é válido (não None, não vazio e é string)
+        if not speaker_id or not isinstance(speaker_id, str) or not speaker_id.strip():
             return None
 
-        # Remove hífens do speaker_id para consulta no BigQuery
-        speaker_id_clean = speaker_id.replace("-", "")
+        # Remove hífens do speaker_id para consulta no BigQuery, com validação adicional
+        try:
+            speaker_id_clean = speaker_id.replace("-", "")
+            if not speaker_id_clean:
+                return None
+        except (AttributeError, TypeError):
+            # Se speaker_id não for string válida
+            return None
 
         # Consulta ao BigQuery
         sql = f"""SELECT *
@@ -160,11 +191,19 @@ def verify_speaker(uploaded_file=None, gs_uri=None):
         return {
             "speaker_id": speaker_id,
             "confidence": confidence,
-            "speaker_name": row["speaker_name"],
-            "instructions": row["instructions"],
+            "speaker_name": row.get("speaker_name"),
+            "instructions": row.get("instructions"),
             "found_in_bq": True
         }
 
+    except requests.RequestException as e:
+        # Erro na requisição HTTP
+        print(f"Erro na requisição para verificação de speaker: {e}")
+        return None
+    except Exception as e:
+        # Outros erros
+        print(f"Erro inesperado na verificação de speaker: {e}")
+        return None
     finally:
         # Remove arquivo temporário se foi criado aqui
         if tmp_path and os.path.exists(tmp_path):

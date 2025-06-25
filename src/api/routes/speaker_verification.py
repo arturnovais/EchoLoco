@@ -5,6 +5,7 @@ e devolve o speaker_id se a similaridade (ou distância) ultrapassar o threshold
 import os
 import tempfile
 import logging
+import numpy as np
 from fastapi import APIRouter, HTTPException
 
 from api.schemas.speaker_verification import (
@@ -29,7 +30,7 @@ router = APIRouter()
 _titanet = load_model()
 _qdrant = QdrantService()
 
-_THRESHOLD = 0.7
+_THRESHOLD = 0.45
 
 def _materialize_audio(path: str) -> tuple[str, bool]:
     """
@@ -64,7 +65,7 @@ def verify_speaker(req: SpeakerVerificationRequest):
 
     try:
         logger.info("Searching for similar embeddings in Qdrant")
-        results = _qdrant.search_similar(embedding=emb, top_k=1, collection_name="speakers")
+        results = _qdrant.search_similar(embedding=emb, top_k=1, collection_name="speakers", with_vectors=True)
         logger.info("Search completed")
         logger.info(f"Results: {results}")
     except Exception as e:
@@ -78,21 +79,27 @@ def verify_speaker(req: SpeakerVerificationRequest):
         logger.info("No similar speakers found")
         return SpeakerVerificationResponse(matched=False, speaker_id=None, score=None)
 
-    best = results[0]          # ponto mais próximo
-    distance = best.score      # para COSINE é distância (quanto menor melhor)
-    logger.info(f"Best match found with distance: {distance}")
+    best = results[0]   
+    found_embedding = best.vector   
+    logger.info(f"Best match found with distance: {best.score}")
+    
+    # Calcula similaridade de cosseno entre os embeddings
+    cosine_similarity = float(np.dot(emb, found_embedding) / 
+                             (np.linalg.norm(emb) * np.linalg.norm(found_embedding)))
+    
+    logger.info(f"Cosine similarity: {cosine_similarity:.4f} | Threshold: {_THRESHOLD}")
 
-    if distance <= _THRESHOLD:
+    if cosine_similarity >= _THRESHOLD:
         logger.info(f"Speaker verified with ID: {best.id}")
         return SpeakerVerificationResponse(
             matched=True,
             speaker_id=str(best.id),
-            score=distance,
+            score=cosine_similarity,
         )
     else:
-        logger.info("Speaker not verified, distance above threshold")
+        logger.info("Speaker not verified, cosine similarity below threshold")
         return SpeakerVerificationResponse(
             matched=False,
             speaker_id=None,
-            score=distance,
+            score=cosine_similarity,
         )
