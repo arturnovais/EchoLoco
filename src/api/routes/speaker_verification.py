@@ -30,8 +30,6 @@ router = APIRouter()
 _titanet = load_model()
 _qdrant = QdrantService()
 
-_THRESHOLD = 0.45
-
 def _materialize_audio(path: str) -> tuple[str, bool]:
     """
     Faz download se gs://..., devolve (local_path, is_tmp)
@@ -51,6 +49,7 @@ def _materialize_audio(path: str) -> tuple[str, bool]:
 @router.post("/", response_model=SpeakerVerificationResponse)
 def verify_speaker(req: SpeakerVerificationRequest):
     logger.info(f"Received request to verify speaker with audio path: {req.audio_path}")
+    logger.info(f"Using threshold: {req.threshold}")
     local_path, is_tmp = _materialize_audio(req.audio_path)
 
     try:
@@ -87,9 +86,9 @@ def verify_speaker(req: SpeakerVerificationRequest):
     cosine_similarity = float(np.dot(emb, found_embedding) / 
                              (np.linalg.norm(emb) * np.linalg.norm(found_embedding)))
     
-    logger.info(f"Cosine similarity: {cosine_similarity:.4f} | Threshold: {_THRESHOLD}")
+    logger.info(f"Cosine similarity: {cosine_similarity:.4f} | Threshold: {req.threshold}")
 
-    if cosine_similarity >= _THRESHOLD:
+    if cosine_similarity >= req.threshold:
         logger.info(f"Speaker verified with ID: {best.id}")
         return SpeakerVerificationResponse(
             matched=True,

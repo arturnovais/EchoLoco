@@ -161,14 +161,14 @@ def tts_audio(text, provider=None, voice_id=None, voice_settings=None):
     
     return audio_bytes, mime
 
-def verify_speaker(uploaded_file=None, gs_uri=None):
+def verify_speaker(uploaded_file=None, gs_uri=None, threshold=0.45):
     """
     Verifica o speaker de um arquivo de áudio e retorna suas informações.
     
     Args:
         uploaded_file: Arquivo de áudio carregado (opcional se gs_uri fornecido)
         gs_uri: URI do GCS do áudio (opcional se uploaded_file fornecido)
-        
+        threshold: Threshold para verificação do speaker (padrão: 0.45)
     Returns:
         dict: Informações do speaker verificado ou None se não identificado
     """
@@ -200,7 +200,7 @@ def verify_speaker(uploaded_file=None, gs_uri=None):
         # Faz request para API de verificação
         response = requests.post(
             f"{API_URL}/speaker/",
-            json={"audio_path": gs_uri},
+            json={"audio_path": gs_uri, "threshold": threshold},
             timeout=90
         )
         response.raise_for_status()

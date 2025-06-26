@@ -13,11 +13,30 @@ st.set_page_config(page_title="Chatbot de Voz", page_icon=":microphone:")
 st.title("🗣️ Chatbot de Voz Personalizado")
 
 # -----------------------------------------------------------------------------
-# Barra lateral – reiniciar conversa
+# Barra lateral – reiniciar conversa + ajustes avançados
 # -----------------------------------------------------------------------------
 if st.sidebar.button("🔄 Nova conversa"):
     st.session_state.clear()
     st.rerun()
+
+# Expander discreto para ajustes avançados
+with st.sidebar.expander("⚙️ Ajustes avançados", expanded=False):
+    threshold_default = st.session_state.get("threshold", 0.1)
+    threshold_str = st.text_input(
+        "Threshold de verificação (0.1 – 0.9)",
+        value=f"{threshold_default:.2f}",
+        help="Aumente para exigir coincidência mais exata; diminua para ser mais permissivo.",
+    )
+    try:
+        threshold_value = float(threshold_str)
+        if not 0.1 <= threshold_value <= 0.9:
+            raise ValueError
+    except ValueError:
+        st.warning("Por favor, digite um número entre 0.1 e 0.9")
+        threshold_value = threshold_default
+
+# Salva o threshold escolhido na sessão
+st.session_state["threshold"] = threshold_value
 
 # -----------------------------------------------------------------------------
 # Estado da sessão – histórico + contador para widget de áudio
@@ -80,9 +99,13 @@ if audio_file is not None:
         gs_uri, tmp_path = upload_audio_to_gcs(audio_file, dest_prefix="audio")
 
     try:
-        # Identificação do locutor
+        # Identificação do locutor usando threshold configurável
         with st.spinner("🔎 Identificando usuário…"):
-            speaker_info = verify_speaker(uploaded_file=audio_file, gs_uri=gs_uri)
+            speaker_info = verify_speaker(
+                uploaded_file=audio_file,
+                gs_uri=gs_uri,
+                threshold=st.session_state["threshold"],
+            )
 
         # Transcrição
         with st.spinner("🔎 Transcrevendo…"):
@@ -138,18 +161,24 @@ if audio_file is not None:
         with st.spinner("🤖 Pensando…"):
             assistant_reply = chat_completion(history_for_llm)
 
-        # Guarda e mostra a resposta
+        # Configurações de voz
         voice_settings = {
-        "stability": 0.25,
-        "similarity_boost": 0.9,
-        "use_speaker_boost": True,
-        "style": 0.4,
-        "speed": 1
-    }
-        with st.spinner("🎙️ Gerando voz…"):
-            audio_bytes, mime = tts_audio(assistant_reply, provider="elevenlabs", voice_id="ttLrPNfZdNBtVDeOUJsm", voice_settings=voice_settings)
+            "stability": 0.25,
+            "similarity_boost": 0.9,
+            "use_speaker_boost": True,
+            "style": 0.4,
+            "speed": 1,
+        }
 
-        # Salva no histórico áudio + mime para reexibição em runs futuros
+        # Guarda e mostra a resposta
+        with st.spinner("🎙️ Gerando voz…"):
+            audio_bytes, mime = tts_audio(
+                assistant_reply,
+                provider="elevenlabs",
+                voice_id="ttLrPNfZdNBtVDeOUJsm",
+                voice_settings=voice_settings,
+            )
+
         st.session_state.messages.append(
             {
                 "role": "assistant",
@@ -159,12 +188,9 @@ if audio_file is not None:
             }
         )
 
+        # Exibe no chat
         with st.chat_message("assistant"):
             st.write(assistant_reply)
-            st.audio(audio_bytes, format=mime)("assistant")
-            st.write(assistant_reply)
-            with st.spinner("🎙️ Gerando voz…"):
-                audio_bytes, mime = tts_audio(assistant_reply)
             st.audio(audio_bytes, format=mime)
 
     finally:
